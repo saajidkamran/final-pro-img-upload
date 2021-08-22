@@ -1,0 +1,51 @@
+service: serverless-image-upload
+
+frameworkVersion: '2'
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  profile: serverlessUser
+  region: ap-southeast-1
+  stage: dev
+  environment:
+      imageUploadBucket: ${self:custom.imageUploadBucket}
+      region: ${self:provider.region}
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+              - s3:*
+              - ses:*
+      Resource: '*'
+
+
+
+
+plugins: 
+    - serverless-webpack 
+
+package:
+  individually: true
+
+custom:
+  
+  imageUploadBucket: img-uploader-bucket-sample 
+        
+functions:
+  
+  imageUpload:
+        handler: lambdas/ImageUpload.handler
+        events:
+            - http:
+                  path: image-upload
+                  method: POST
+                  cors: true
+
+resources:
+  Resources:
+    ImageUploadBucket:
+            Type: AWS::S3::Bucket
+            Properties:
+                BucketName: ${self:custom.imageUploadBucket}
+                AccessControl: PublicRead
+
